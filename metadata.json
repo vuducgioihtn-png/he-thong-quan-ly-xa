@@ -1,0 +1,6 @@
+{
+  "name": "Village Information Management System",
+  "description": "Hệ thống quản lý dữ liệu hành chính cấp xã sau sáp nhập thôn, hỗ trợ 4 vai trò người dùng (Người dân, Cán bộ thôn, Cán bộ xã, Super Admin) với cơ chế quản lý đa địa phương.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
