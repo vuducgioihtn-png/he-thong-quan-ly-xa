@@ -162,8 +162,8 @@ export const SEEDED_VILLAGES: Village[] = [
     latitude: 20.2429,
     longitude: 106.0735,
     googleMapUrl: "https://maps.google.com/?q=20.2429,106.0735",
-    imageUrl: "https://images.unsplash.com/photo-1472214222541-d510753a4907?w=600&auto=format&fit=crop&q=60",
-    bannerUrl: "https://images.unsplash.com/photo-1472214222541-d510753a4907?w=1200&auto=format&fit=crop&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&auto=format&fit=crop&q=60",
+    bannerUrl: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200&auto=format&fit=crop&q=80",
     introduction: "Sắp xếp sáp nhập nguyên trạng thôn 4 Hải Minh, thôn 5 Hải Minh và thôn 10 Liên Minh để lập nên Thôn 8 mới. Địa bàn có truyền thống văn nghệ quần chúng và thể thao vô cùng phát triển sôi nổi."
   },
   {

@@ -416,7 +416,8 @@ export default function App() {
             updated.imageUrl.includes("1500627869374") || 
             updated.imageUrl.includes("1528164344705") || 
             updated.imageUrl.includes("1500382017468") || 
-            updated.imageUrl.includes("1501785888041");
+            updated.imageUrl.includes("1501785888041") ||
+            updated.imageUrl.includes("1472214222541");
           
           if (isBrokenOrOld) {
             updated.imageUrl = seeded.imageUrl;
