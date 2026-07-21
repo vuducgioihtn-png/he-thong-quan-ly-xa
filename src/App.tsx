@@ -16,7 +16,7 @@ import CommuneOfficialView from "./components/CommuneOfficialView";
 import SuperAdminView from "./components/SuperAdminView";
 import OfficialAuthPortal from "./components/OfficialAuthPortal";
 import PermissionsModal from "./components/PermissionsModal";
-import { ShieldCheck, UserCheck, RefreshCw, Sun, Moon, Download, Upload, LogOut } from "lucide-react";
+import { ShieldCheck, UserCheck, RefreshCw, Sun, Moon, Download, Upload, LogOut, Clock, CloudSun, Thermometer } from "lucide-react";
 
 const SEEDED_REGISTRATIONS: OfficialRegistration[] = [
   {
@@ -175,7 +175,74 @@ const SEEDED_REGISTRATIONS: OfficialRegistration[] = [
   }
 ];
 
+const getWeatherDesc = (code: number) => {
+  if (code === 0) return { label: "Trời quang mây", icon: "☀️" };
+  if ([1, 2, 3].includes(code)) return { label: "Nhiều mây", icon: "⛅" };
+  if ([45, 48].includes(code)) return { label: "Có sương mù", icon: "🌫️" };
+  if ([51, 53, 55, 56, 57].includes(code)) return { label: "Mưa phùn", icon: "🌧️" };
+  if ([61, 63, 65, 66, 67].includes(code)) return { label: "Mưa rào", icon: "🌧️" };
+  if ([71, 73, 75, 77].includes(code)) return { label: "Có tuyết", icon: "❄️" };
+  if ([80, 81, 82].includes(code)) return { label: "Mưa lớn", icon: "🌧️" };
+  if ([95, 96, 99].includes(code)) return { label: "Có dông", icon: "⛈️" };
+  return { label: "Có mây", icon: "☁️" };
+};
+
 export default function App() {
+  // Real-time clock state
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Real-time weather state
+  const [weather, setWeather] = useState<{ temp: number; desc: string } | null>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=20.25&longitude=105.97&current=temperature_2m,weather_code");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.current) {
+            const temp = Math.round(data.current.temperature_2m);
+            const code = data.current.weather_code;
+            const descInfo = getWeatherDesc(code);
+            setWeather({
+              temp,
+              desc: descInfo.label
+            });
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Lỗi tải thời tiết", e);
+      }
+      setWeather({
+        temp: 29,
+        desc: "Trời quang mây"
+      });
+    };
+    fetchWeather();
+    const interval = setInterval(fetchWeather, 600000); // 10 mins
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatVietnameseDate = (date: Date) => {
+    const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+    const dayName = days[date.getDay()];
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+    const ss = String(date.getSeconds()).padStart(2, "0");
+    return `${dayName}, ${dd}/${mm}/${yyyy} | ${hh}:${min}:${ss}`;
+  };
+
   // 1. Role State & active simulation configs
   const [role, setRole] = useState<UserRole>(() => {
     const saved = localStorage.getItem("vims_role");
@@ -263,6 +330,14 @@ export default function App() {
     const saved = localStorage.getItem("vims_theme");
     return (saved as "light" | "dark") || "light";
   });
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
 
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
 
@@ -814,50 +889,24 @@ export default function App() {
       {/* SaaS Global top helper utility rail */}
       <div className="bg-slate-950 text-slate-400 text-[10px] px-4 py-2 border-b border-slate-900 flex justify-between items-center font-mono font-semibold">
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-            PORTAL: 3000
+          <span className="flex items-center gap-2 text-indigo-400">
+            <Clock className="w-3.5 h-3.5 animate-pulse text-indigo-400" />
+            <span className="text-slate-300 font-sans text-xs tracking-wide">
+              {formatVietnameseDate(currentTime)}
+            </span>
           </span>
-          <span>SYSTEM_DATABASE: OK</span>
-          <span className="hidden md:inline">TENANT_ID: {activeTenantId}</span>
+          <span className="text-slate-700 font-normal">|</span>
+          <span className="flex items-center gap-2 text-amber-400">
+            <CloudSun className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-slate-300 font-sans text-xs tracking-wide flex items-center gap-1.5">
+              <span>Ninh Bình:</span>
+              <span className="font-bold text-white font-mono">{weather ? `${weather.temp}°C` : "29°C"}</span>
+              <span className="text-slate-400 text-[11px]">({weather ? weather.desc : "Trời quang mây"})</span>
+            </span>
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Export database */}
-          <button 
-            onClick={handleExportDatabase}
-            className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer"
-            title="Tải tệp sao lưu dữ liệu (.json)"
-          >
-            <Download className="w-3 h-3" /> Sao lưu dữ liệu
-          </button>
-
-          <span>|</span>
-
-          {/* Import database */}
-          <label className="hover:text-cyan-400 transition-colors flex items-center gap-1 cursor-pointer select-none">
-            <Upload className="w-3 h-3" /> Khôi phục dữ liệu
-            <input 
-              type="file" 
-              accept=".json" 
-              onChange={handleImportDatabase} 
-              className="hidden" 
-            />
-          </label>
-
-          <span>|</span>
-
-          {/* Reset button */}
-          <button 
-            onClick={handleResetDatabase}
-            className="hover:text-amber-400 transition-colors flex items-center gap-1 cursor-pointer"
-            title="Khôi phục dữ liệu gốc"
-          >
-            <RefreshCw className="w-3 h-3" /> Reset Demo DB
-          </button>
-          
-          <span>|</span>
-
           {/* Theme switcher */}
           <button 
             onClick={toggleTheme}
@@ -1037,7 +1086,7 @@ export default function App() {
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Đang kết nối Real-time</span>
         </div>
         <div className="text-center sm:text-right text-slate-500 font-sans">
-          © 2026 Village Information Management System — Thiết kế bởi Administrative Solutions
+          © 2026 Village Information Management System — Thiết kế bởi Vũ Đức Giới
         </div>
       </footer>
 
