@@ -400,20 +400,34 @@ export default function App() {
         return SEEDED_VILLAGES;
       }
       
-      // Migrate "2024-11-01" to "22/6/2026" seamlessly in-place to protect user edits from being lost
+      // Migrate "2024-11-01" to "22/6/2026" and fix broken Unsplash images seamlessly in-place to protect user edits from being lost
       let needMigration = false;
       const migratedDates = migrated.map((v: any) => {
-        if (v.establishedDate === "2024-11-01") {
+        let updated = { ...v };
+        if (updated.establishedDate === "2024-11-01") {
+          updated.establishedDate = "22/6/2026";
           needMigration = true;
-          return { ...v, establishedDate: "22/6/2026" };
         }
-        return v;
+        
+        // Find corresponding seeded village to ensure images are perfectly synced if they are broken/old
+        const seeded = SEEDED_VILLAGES.find((sv) => sv.id === v.id);
+        if (seeded) {
+          const isBrokenOrOld = !updated.imageUrl || 
+            updated.imageUrl.includes("1500627869374") || 
+            updated.imageUrl.includes("1528164344705") || 
+            updated.imageUrl.includes("1500382017468") || 
+            updated.imageUrl.includes("1501785888041");
+          
+          if (isBrokenOrOld) {
+            updated.imageUrl = seeded.imageUrl;
+            updated.bannerUrl = seeded.bannerUrl;
+            needMigration = true;
+          }
+        }
+        return updated;
       });
       localStorage.setItem("vims_db_villages", JSON.stringify(migratedDates));
-      if (needMigration) {
-        return migratedDates;
-      }
-      return migrated;
+      return migratedDates;
     }
     return SEEDED_VILLAGES;
   });

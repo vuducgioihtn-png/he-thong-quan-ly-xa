@@ -8,7 +8,7 @@ import { UserRole, WardTenant, Village, Official, Announcement, FieldReflection,
 import { 
   Users, Building, MapPin, Plus, FileText, CheckCircle2, 
   XCircle, Edit2, Check, RefreshCw, Eye, Trash2, Calendar, 
-  Phone, Mail, UserPlus, AlertCircle, Sparkles, Send, LogOut, Download
+  Phone, Mail, UserPlus, AlertCircle, Sparkles, Send, LogOut, Download, Image
 } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -62,6 +62,8 @@ export default function VillageOfficialView({
   const [lat, setLat] = useState(20.0);
   const [lng, setLng] = useState(106.0);
   const [mapIframe, setMapIframe] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
   
   // Announcement drafting state
   const [annTitle, setAnnTitle] = useState("");
@@ -93,6 +95,8 @@ export default function VillageOfficialView({
       setLat(village.latitude);
       setLng(village.longitude);
       setMapIframe(village.mapIframe || "");
+      setImageUrl(village.imageUrl || "");
+      setBannerUrl(village.bannerUrl || "");
     }
   }, [village, activeVillageId]);
 
@@ -126,6 +130,8 @@ export default function VillageOfficialView({
       longitude: Number(lng),
       googleMapUrl: `https://maps.google.com/?q=${lat},${lng}`,
       mapIframe: mapIframe,
+      imageUrl: imageUrl,
+      bannerUrl: bannerUrl,
       status: "DRAFT", // Saving edits as DRAFT for review
       createdBy: "Phạm Văn Nam"
     };
@@ -621,6 +627,38 @@ export default function VillageOfficialView({
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">Dán mã nhúng {"<iframe>"} từ Google Maps để thay thế hình định vị giả lập bằng bản đồ tương tác thật.</p>
+                </div>
+              </div>
+
+              {/* Image & Banner URLs */}
+              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-200/60">
+                <h3 className="text-xs font-bold text-slate-800 mb-2.5 flex items-center gap-1.5">
+                  <Image className="w-4 h-4 text-indigo-600" />
+                  Cấu Hình Hình Ảnh Thôn (Ảnh đại diện & Banner)
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Đường dẫn Ảnh đại diện thôn (Image URL) *</label>
+                    <input
+                      type="text"
+                      required
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="Nhập link ảnh (ví dụ từ Unsplash)..."
+                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Đường dẫn Banner rộng thôn (Banner URL) *</label>
+                    <input
+                      type="text"
+                      required
+                      value={bannerUrl}
+                      onChange={(e) => setBannerUrl(e.target.value)}
+                      placeholder="Nhập link ảnh banner rộng..."
+                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
+                    />
+                  </div>
                 </div>
               </div>
 

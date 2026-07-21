@@ -1076,6 +1076,28 @@ export default function CommuneOfficialView({
                       />
                     </div>
 
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Đường dẫn Ảnh đại diện thôn (Image URL) *</label>
+                      <input
+                        type="text" required
+                        value={editingVillage.imageUrl || ""}
+                        onChange={(e) => setEditingVillage({...editingVillage, imageUrl: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-2 font-mono"
+                        placeholder="Nhập URL ảnh Unsplash..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Đường dẫn Banner rộng thôn (Banner URL) *</label>
+                      <input
+                        type="text" required
+                        value={editingVillage.bannerUrl || ""}
+                        onChange={(e) => setEditingVillage({...editingVillage, bannerUrl: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-2 font-mono"
+                        placeholder="Nhập URL ảnh banner..."
+                      />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Vĩ độ (Latitude) *</label>

@@ -72,8 +72,8 @@ export const SEEDED_VILLAGES: Village[] = [
     latitude: 20.2415,
     longitude: 106.0792,
     googleMapUrl: "https://maps.google.com/?q=20.2415,106.0792",
-    imageUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=600&auto=format&fit=crop&q=60",
-    bannerUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=1200&auto=format&fit=crop&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&auto=format&fit=crop&q=60",
+    bannerUrl: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200&auto=format&fit=crop&q=80",
     introduction: "Thôn 3 quy tụ quy mô dân số lớn từ việc sáp nhập nguyên trạng thôn 30, thôn 32 và thôn 33. Thôn đang tập trung hoàn thiện hạ tầng thiết chế văn hóa thể thao đạt tiêu chuẩn nông thôn mới nâng cao."
   },
   {
@@ -108,8 +108,8 @@ export const SEEDED_VILLAGES: Village[] = [
     latitude: 20.2440,
     longitude: 106.0890,
     googleMapUrl: "https://maps.google.com/?q=20.2440,106.0890",
-    imageUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=600&auto=format&fit=crop&q=60",
-    bannerUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=1200&auto=format&fit=crop&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&auto=format&fit=crop&q=60",
+    bannerUrl: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&auto=format&fit=crop&q=80",
     introduction: "Thôn 5 là đơn vị sáp nhập đặc biệt từ thôn 1, thôn 2A, thôn 3 cũ cùng toàn bộ Cụm dân cư Phú Cường (tiếp quản từ thị trấn Cát Thành, huyện Trực Ninh) để giải quyết dứt điểm vấn đề lịch sử xâm canh xâm cư. Thôn phát triển năng động, ổn định đời sống nhân dân."
   },
   {
@@ -162,8 +162,8 @@ export const SEEDED_VILLAGES: Village[] = [
     latitude: 20.2429,
     longitude: 106.0735,
     googleMapUrl: "https://maps.google.com/?q=20.2429,106.0735",
-    imageUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=600&auto=format&fit=crop&q=60",
-    bannerUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=1200&auto=format&fit=crop&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1472214222541-d510753a4907?w=600&auto=format&fit=crop&q=60",
+    bannerUrl: "https://images.unsplash.com/photo-1472214222541-d510753a4907?w=1200&auto=format&fit=crop&q=80",
     introduction: "Sắp xếp sáp nhập nguyên trạng thôn 4 Hải Minh, thôn 5 Hải Minh và thôn 10 Liên Minh để lập nên Thôn 8 mới. Địa bàn có truyền thống văn nghệ quần chúng và thể thao vô cùng phát triển sôi nổi."
   },
   {
@@ -216,8 +216,8 @@ export const SEEDED_VILLAGES: Village[] = [
     latitude: 20.2445,
     longitude: 106.0805,
     googleMapUrl: "https://maps.google.com/?q=20.2445,106.0805",
-    imageUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=600&auto=format&fit=crop&q=60",
-    bannerUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=1200&auto=format&fit=crop&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&auto=format&fit=crop&q=60",
+    bannerUrl: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&auto=format&fit=crop&q=80",
     introduction: "Thôn 11 được thành lập trên cơ sở hợp nhất thôn 9, thôn 10, thôn 11 và thôn 12. Nhân dân chủ yếu sinh sống bằng nghề trồng trọt ngũ cốc, chăn nuôi gia súc theo hướng quy mô trang trại tập trung sạch."
   },
   {
@@ -270,8 +270,8 @@ export const SEEDED_VILLAGES: Village[] = [
     latitude: 20.2472,
     longitude: 106.0789,
     googleMapUrl: "https://maps.google.com/?q=20.2472,106.0789",
-    imageUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=600&auto=format&fit=crop&q=60",
-    bannerUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=1200&auto=format&fit=crop&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop&q=60",
+    bannerUrl: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&auto=format&fit=crop&q=80",
     introduction: "Sáp nhập thôn 13, thôn 14, thôn 15 và thôn 16 cũ để quy hoạch cơ cấu lại Thôn 14 hiện nay. Nhân dân thi đua hăng hái, phát triển tốt làng nghề chế biến thực phẩm sạch địa phương."
   },
   {
@@ -324,8 +324,8 @@ export const SEEDED_VILLAGES: Village[] = [
     latitude: 20.2520,
     longitude: 106.0980,
     googleMapUrl: "https://maps.google.com/?q=20.2520,106.0980",
-    imageUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=600&auto=format&fit=crop&q=60",
-    bannerUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=1200&auto=format&fit=crop&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&auto=format&fit=crop&q=60",
+    bannerUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&auto=format&fit=crop&q=80",
     introduction: "Sáp nhập 4 xóm gồm thôn 5, 6, 20 và 21 Hải Đường thành Thôn 17 mới. Nhân dân trong thôn đoàn kết chung tay đóng góp phát triển nông thôn mới nâng cao kiểu mẫu, tích cực giữ vững an ninh xã thôn."
   },
   {
@@ -378,8 +378,8 @@ export const SEEDED_VILLAGES: Village[] = [
     latitude: 20.2442,
     longitude: 106.0965,
     googleMapUrl: "https://maps.google.com/?q=20.2442,106.0965",
-    imageUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=600&auto=format&fit=crop&q=60",
-    bannerUrl: "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=1200&auto=format&fit=crop&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&auto=format&fit=crop&q=60",
+    bannerUrl: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop&q=80",
     introduction: "Thôn 20 là đơn vị sáp nhập quy mô lớn gồm thôn 12, thôn 13, thôn 14 và thôn 16 Hải Đường cũ. Đây là vùng kinh tế vành đai nông sản sạch phát triển vô cùng thịnh vượng bền vững."
   }
 ];
