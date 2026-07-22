@@ -14,10 +14,10 @@ export const SEEDED_TENANTS: WardTenant[] = [
     address: "Xã Hải Anh, Tỉnh Ninh Bình",
     logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=150&auto=format&fit=crop&q=60",
     banner: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1200&auto=format&fit=crop&q=80",
-    introduction: "Xã Hải Anh được thành lập trên cơ sở hợp nhất và sắp xếp, tổ chức lại toàn diện bộ máy hành chính cấp thôn từ 65 thôn xóm sáp nhập còn 20 thôn mới đạt chuẩn quy mô. Nằm ở phía Đông - Đông Nam của tỉnh Ninh Bình, diện tích tự nhiên của xã là 26,13 km². Quy mô dân số đạt 51.211 người với 14.697 hộ dân sinh sống tại 20 thôn mới (từ Thôn 1 đến Thôn 20), trong đó có 39,3% đồng bào theo đạo Công giáo. Đảng bộ xã có 1.818 đảng viên sinh hoạt tại 81 tổ chức Đảng (02 Đảng bộ cơ sở, 14 chi bộ cơ sở, 65 chi bộ thôn). Đặc biệt, chính quyền xã cũng đã nhận bàn giao quản lý toàn bộ quy mô cụm dân cư Phú Cường từ thị trấn Cát Thành (huyện Trực Ninh) cũ với 209 hộ dân, 896 nhân khẩu sáp nhập vào Thôn 5 mới để giải quyết triệt để vấn đề xâm canh, xâm cư lịch sử.",
+    introduction: "Xã Hải Anh được thành lập trên cơ sở hợp nhất và sắp xếp, tổ chức lại toàn diện bộ máy hành chính cấp thôn từ 65 thôn xóm sáp nhập còn 20 thôn mới đạt chuẩn quy mô. Nằm ở phía Đông - Đông Nam của tỉnh Ninh Bình, diện tích tự nhiên của xã là 26,53 km². Quy mô dân số đạt 51.211 người với 14.697 hộ dân sinh sống tại 20 thôn mới (từ Thôn 1 đến Thôn 20), trong đó có 39,3% đồng bào theo đạo Công giáo. Đảng bộ xã có 1.818 đảng viên sinh hoạt tại 81 tổ chức Đảng (02 Đảng bộ cơ sở, 14 chi bộ cơ sở, 65 chi bộ thôn). Đặc biệt, chính quyền xã cũng đã nhận bàn giao quản lý toàn bộ quy mô cụm dân cư Phú Cường từ thị trấn Cát Thành (huyện Trực Ninh) cũ với 209 hộ dân, 896 nhân khẩu sáp nhập vào Thôn 5 mới để giải quyết triệt để vấn đề xâm canh, xâm cư lịch sử.",
     phone: "0229.3864.123",
     email: "xahaianh.nb@ninhbinh.gov.vn",
-    naturalArea: 2487.3
+    naturalArea: 2653
   }
 ];
 

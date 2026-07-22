@@ -363,6 +363,13 @@ export default function App() {
           updated.email = "xahaianh.nb@ninhbinh.gov.vn";
           changed = true;
         }
+        if (updated.id === "hai-anh-ninh-binh" && (updated.naturalArea !== 2653 || updated.naturalArea === 2487.3)) {
+          updated.naturalArea = 2653;
+          if (updated.introduction) {
+            updated.introduction = updated.introduction.replace("26,13 km²", "26,53 km²").replace("24,87 km²", "26,53 km²");
+          }
+          changed = true;
+        }
         if (changed) {
           return updated;
         }
