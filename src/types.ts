@@ -159,6 +159,8 @@ export interface FieldReflection {
   title: string;
   content: string;
   imageUrl?: string;
+  videoUrl?: string;
+  mediaType?: "image" | "video";
   latitude?: number;
   longitude?: number;
   status: "PENDING" | "RESOLVED" | "REJECTED";

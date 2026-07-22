@@ -1814,6 +1814,26 @@ export default function CommuneOfficialView({
 
                   <p className="text-slate-600 leading-relaxed text-sm">{ref.content}</p>
 
+                  {/* Media Evidence Display */}
+                  {ref.videoUrl || ref.mediaType === "video" ? (
+                    <div className="rounded-xl overflow-hidden bg-slate-950 border border-slate-200 p-1">
+                      <div className="px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-300 border-b border-slate-800">
+                        <span className="font-bold flex items-center gap-1 text-rose-400">🎥 Bằng chứng Video từ công dân</span>
+                        <span className="font-mono text-[10px] text-slate-400">HD / MP4</span>
+                      </div>
+                      <video controls src={ref.videoUrl} className="w-full max-h-72 object-contain bg-black rounded-b-lg">
+                        Trình duyệt không hỗ trợ phát video này.
+                      </video>
+                    </div>
+                  ) : ref.imageUrl ? (
+                    <div className="rounded-xl overflow-hidden border border-slate-200">
+                      <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                        🖼️ Hình ảnh hiện trường
+                      </div>
+                      <img src={ref.imageUrl} alt={ref.title} className="w-full max-h-64 object-cover" />
+                    </div>
+                  ) : null}
+
                   <div className="p-3 bg-slate-50 border border-slate-200/50 rounded-lg flex items-center justify-between text-[11px] text-slate-600">
                     <span className="flex items-center gap-1 font-semibold">
                       <MapPin className="w-3.5 h-3.5 text-indigo-600 shrink-0" />

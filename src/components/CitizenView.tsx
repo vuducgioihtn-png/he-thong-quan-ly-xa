@@ -8,7 +8,8 @@ import { UserRole, WardTenant, Village, Official, AdministrativeOffice, Announce
 import { 
   Search, Landmark, MapPin, Users, Phone, Mail, QrCode, FileText, 
   Map, Calendar, ArrowRight, X, PhoneCall, Copy, Check, Info,
-  AlertCircle, ChevronRight, Upload, MapPinned, Activity, HelpCircle, UserPlus
+  AlertCircle, ChevronRight, Upload, MapPinned, Activity, HelpCircle, UserPlus,
+  Video, Image, Play, Trash2, Film, FileVideo, Paperclip
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -66,11 +67,47 @@ export default function CitizenView({
   const [selectedOffice, setSelectedOffice] = useState<AdministrativeOffice | null>(null);
   
   // QR modal state
-  const [qrModalUrl, setQrModalUrl] = useState<{title: string, url: string} | null>(null);
+  const [qrModalUrl, setQrModalUrl] = useState<{title: string, url: string, lat?: number, lng?: number} | null>(null);
+  const [villageMapViewMode, setVillageMapViewMode] = useState<"satellite" | "roadmap">("satellite");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+
+  // Helper function to build directions link
+  const getVillageDirectionsUrl = (v: { latitude?: number; longitude?: number; googleMapUrl?: string; name?: string }) => {
+    if (v.latitude && v.longitude) {
+      return `https://www.google.com/maps/dir/?api=1&destination=${v.latitude},${v.longitude}`;
+    }
+    if (v.googleMapUrl && v.googleMapUrl.includes("google.com/maps")) {
+      return v.googleMapUrl;
+    }
+    return `https://maps.google.com/?q=${encodeURIComponent(v.name || 'Thôn')}`;
+  };
+
+  // Helper function to build map embed URL for satellite / roadmap view
+  const getVillageEmbedUrl = (v: Village, mode: "satellite" | "roadmap") => {
+    if (v.mapIframe && mode === "satellite") {
+      const embedUrl = getMapEmbedUrl(v.mapIframe);
+      if (embedUrl) return embedUrl;
+    }
+    const mapType = mode === "satellite" ? "k" : "m";
+    const lat = v.latitude || 20.2458;
+    const lng = v.longitude || 106.0825;
+    return `https://maps.google.com/maps?q=${lat},${lng}&t=${mapType}&z=16&output=embed`;
+  };
   
   // Reflection form states
-  const [reflectionForm, setReflectionForm] = useState({
+  const [reflectionForm, setReflectionForm] = useState<{
+    citizenName: string;
+    citizenPhone: string;
+    villageId: string;
+    title: string;
+    content: string;
+    latitude: number;
+    longitude: number;
+    imageUrl?: string;
+    videoUrl?: string;
+    mediaType?: "image" | "video";
+    mediaFileName?: string;
+  }>({
     citizenName: "",
     citizenPhone: "",
     villageId: "",
@@ -81,6 +118,43 @@ export default function CitizenView({
   });
   const [reflectionSuccess, setReflectionSuccess] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Handle image or video file upload
+  const handleReflectionMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+
+    if (!isVideo && !isImage) {
+      alert("Vui lòng chọn tệp hình ảnh (jpg, png, webp) hoặc tệp video (mp4, webm, mov)!");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (isVideo) {
+        setReflectionForm((prev) => ({
+          ...prev,
+          videoUrl: dataUrl,
+          imageUrl: undefined,
+          mediaType: "video",
+          mediaFileName: file.name
+        }));
+      } else {
+        setReflectionForm((prev) => ({
+          ...prev,
+          imageUrl: dataUrl,
+          videoUrl: undefined,
+          mediaType: "image",
+          mediaFileName: file.name
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Favorite state management
   const [favoriteVillages, setFavoriteVillages] = useState<string[]>(() => {
@@ -296,7 +370,10 @@ export default function CitizenView({
       title: reflectionForm.title,
       content: reflectionForm.content,
       latitude: reflectionForm.latitude,
-      longitude: reflectionForm.longitude
+      longitude: reflectionForm.longitude,
+      imageUrl: reflectionForm.imageUrl,
+      videoUrl: reflectionForm.videoUrl,
+      mediaType: reflectionForm.mediaType
     });
 
     setReflectionSuccess(true);
@@ -309,7 +386,11 @@ export default function CitizenView({
         title: "",
         content: "",
         latitude: 20.245,
-        longitude: 106.082
+        longitude: 106.082,
+        imageUrl: undefined,
+        videoUrl: undefined,
+        mediaType: undefined,
+        mediaFileName: undefined
       });
       setActiveTab("home");
     }, 3000);
@@ -1363,12 +1444,123 @@ export default function CitizenView({
                       ></textarea>
                     </div>
 
-                    <div className="bg-slate-50 border border-slate-100 p-4 rounded-lg flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Upload className="w-5 h-5 text-slate-400 shrink-0" />
-                        <span className="text-xs text-slate-500 font-semibold">Tải lên hình ảnh hiện trường (Mô phỏng sẵn mẫu)</span>
+                    {/* Media Upload Section (Image or Video) */}
+                    <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                          <Paperclip className="w-4 h-4 text-indigo-600" />
+                          Tải Lên Hình Ảnh Hoặc Video Hiện Trường
+                        </label>
+                        <span className="text-[10px] text-slate-500 font-semibold bg-slate-200/80 px-2 py-0.5 rounded">
+                          Tải tệp thực tế hoặc dùng mẫu
+                        </span>
                       </div>
-                      <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-1 rounded font-bold">IMAGE_AUTO_ATTACH</span>
+
+                      {/* File upload input & action triggers */}
+                      {!reflectionForm.imageUrl && !reflectionForm.videoUrl ? (
+                        <div className="space-y-2">
+                          <label className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-white hover:bg-indigo-50/50 p-4 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all group">
+                            <input
+                              type="file"
+                              accept="image/*,video/*"
+                              onChange={handleReflectionMediaUpload}
+                              className="hidden"
+                            />
+                            <div className="flex items-center gap-2 mb-1">
+                              <Image className="w-5 h-5 text-indigo-600 group-hover:scale-110 transition-transform" />
+                              <Video className="w-5 h-5 text-indigo-600 group-hover:scale-110 transition-transform" />
+                            </div>
+                            <span className="text-xs font-bold text-indigo-700">Chọn tệp Hình ảnh (.jpg, .png...) hoặc Video (.mp4, .mov...) từ thiết bị</span>
+                            <span className="text-[10px] text-slate-400 mt-0.5">Hỗ trợ tất cả định dạng video và hình ảnh từ điện thoại / máy tính</span>
+                          </label>
+
+                          <div className="flex items-center justify-between gap-2 pt-1">
+                            <span className="text-[11px] text-slate-400 font-medium">Hoặc thử nghiệm nhanh:</span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setReflectionForm(prev => ({
+                                  ...prev,
+                                  imageUrl: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600&auto=format&fit=crop&q=60",
+                                  videoUrl: undefined,
+                                  mediaType: "image",
+                                  mediaFileName: "mau_anh_hien_truong.jpg"
+                                }))}
+                                className="px-2.5 py-1 bg-white border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-600 text-[11px] font-bold rounded-lg flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                              >
+                                <Image className="w-3.5 h-3.5 text-emerald-600" /> Mẫu Ảnh
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setReflectionForm(prev => ({
+                                  ...prev,
+                                  videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                                  imageUrl: undefined,
+                                  mediaType: "video",
+                                  mediaFileName: "mau_video_hien_truong.mp4"
+                                }))}
+                                className="px-2.5 py-1 bg-white border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-600 text-[11px] font-bold rounded-lg flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                              >
+                                <Video className="w-3.5 h-3.5 text-rose-600" /> Mẫu Video
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-white border border-slate-200 p-3 rounded-xl space-y-2">
+                          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <div className="flex items-center gap-2">
+                              {reflectionForm.mediaType === "video" ? (
+                                <Film className="w-4 h-4 text-rose-600 shrink-0" />
+                              ) : (
+                                <Image className="w-4 h-4 text-emerald-600 shrink-0" />
+                              )}
+                              <span className="text-xs font-bold text-slate-800 truncate max-w-[200px]">
+                                {reflectionForm.mediaFileName || (reflectionForm.mediaType === "video" ? "Video_Hien_Truong.mp4" : "Hinh_Anh_Hien_Truong.jpg")}
+                              </span>
+                              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100 font-mono">
+                                {reflectionForm.mediaType === "video" ? "VIDEO" : "HÌNH ẢNH"}
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setReflectionForm(prev => ({
+                                ...prev,
+                                imageUrl: undefined,
+                                videoUrl: undefined,
+                                mediaType: undefined,
+                                mediaFileName: undefined
+                              }))}
+                              className="text-slate-400 hover:text-rose-600 p-1 rounded transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-semibold"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" /> Xóa tệp
+                            </button>
+                          </div>
+
+                          {/* Media Preview Player */}
+                          {reflectionForm.mediaType === "video" || reflectionForm.videoUrl ? (
+                            <div className="rounded-lg overflow-hidden bg-slate-950 border border-slate-800 max-h-56 flex items-center justify-center">
+                              <video
+                                controls
+                                src={reflectionForm.videoUrl}
+                                className="w-full max-h-52 object-contain"
+                              >
+                                Trình duyệt không hỗ trợ phát video này.
+                              </video>
+                            </div>
+                          ) : (
+                            <div className="rounded-lg overflow-hidden border border-slate-200 max-h-52">
+                              <img
+                                src={reflectionForm.imageUrl}
+                                alt="Ảnh hiện trường"
+                                className="w-full max-h-48 object-cover"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="pt-2">
@@ -1410,6 +1602,20 @@ export default function CitizenView({
                       <p className="text-slate-500 leading-relaxed text-[11px] line-clamp-2">
                         {ref.content}
                       </p>
+
+                      {/* Display attached media if available */}
+                      {ref.videoUrl || ref.mediaType === "video" ? (
+                        <div className="rounded-lg overflow-hidden bg-slate-950 border border-slate-200 mt-2">
+                          <video controls src={ref.videoUrl} className="w-full max-h-48 object-contain">
+                            Trình duyệt không hỗ trợ phát video.
+                          </video>
+                        </div>
+                      ) : ref.imageUrl ? (
+                        <div className="rounded-lg overflow-hidden border border-slate-200 mt-2">
+                          <img src={ref.imageUrl} alt={ref.title} className="w-full max-h-36 object-cover" />
+                        </div>
+                      ) : null}
+
                       <div className="text-[10px] text-slate-400 font-mono flex justify-between pt-1 border-t border-slate-200/55">
                         <span>Thôn: {tenantVillages.find(v => v.id === ref.villageId)?.name || "Chưa chọn"}</span>
                         <span>{new Date(ref.createdAt).toLocaleDateString()}</span>
@@ -1595,61 +1801,81 @@ export default function CitizenView({
                     </div>
                   </div>
 
-                    {/* Simulated or Real Google Maps interactive indicator */}
-                    <div className="bg-white rounded-xl border border-slate-200 p-4">
-                      <h4 className="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-1">
-                        <MapPin className="w-4 h-4 text-emerald-600" />
-                        Bản đồ vệ tinh & Địa lý thôn
-                      </h4>
+                    {/* Interactive Satellite & Geographic Google Map Section */}
+                    <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-extrabold text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                          Bản đồ vệ tinh & Địa lý thôn
+                        </h4>
+                        <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/80 text-[11px] font-bold">
+                          <button
+                            type="button"
+                            onClick={() => setVillageMapViewMode("satellite")}
+                            className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 cursor-pointer ${
+                              villageMapViewMode === "satellite"
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            🛰️ Vệ tinh
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setVillageMapViewMode("roadmap")}
+                            className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 cursor-pointer ${
+                              villageMapViewMode === "roadmap"
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            🗺️ Địa lý
+                          </button>
+                        </div>
+                      </div>
                       
-                      <div className="bg-slate-100 rounded-lg h-56 relative overflow-hidden flex items-center justify-center border border-slate-200">
-                        {selectedVillage.mapIframe ? (
-                          <iframe
-                            src={getMapEmbedUrl(selectedVillage.mapIframe) || ""}
-                            className="w-full h-full border-0 rounded-lg"
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title={`Bản đồ ${selectedVillage.name}`}
-                          />
-                        ) : (
-                          <>
-                            {/* Grid design pretending to be topographic map lines */}
-                            <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
-                            <div className="absolute w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 animate-ping"></div>
-                            
-                            {/* Core marker */}
-                            <div className="relative z-10 flex flex-col items-center">
-                              <MapPin className="w-8 h-8 text-rose-500 drop-shadow-md animate-bounce" />
-                              <span className="bg-slate-900/90 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-full mt-1.5 shadow-lg">
-                                {selectedVillage.latitude}, {selectedVillage.longitude}
-                              </span>
-                            </div>
-                          </>
-                        )}
+                      <div className="bg-slate-900 rounded-xl h-60 relative overflow-hidden border border-slate-200 shadow-inner flex items-center justify-center">
+                        <iframe
+                          src={getVillageEmbedUrl(selectedVillage, villageMapViewMode)}
+                          className="w-full h-full border-0 rounded-xl"
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title={`Bản đồ ${selectedVillage.name}`}
+                        />
+                        <div className="absolute top-2 left-2 bg-slate-900/90 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2.5 py-1 rounded-md shadow-md border border-white/20 flex items-center gap-1 z-10 pointer-events-none">
+                          <MapPin className="w-3 h-3 text-rose-400" />
+                          GPS: {selectedVillage.latitude}, {selectedVillage.longitude}
+                        </div>
                       </div>
 
-                    <div className="mt-3.5 space-y-2">
-                      <a 
-                        href={selectedVillage.googleMapUrl} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="w-full py-2 bg-slate-900 hover:bg-slate-950 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <Map className="w-3.5 h-3.5 text-blue-400" />
-                        Mở Google Maps chỉ đường
-                      </a>
+                      <div className="mt-3.5 space-y-2">
+                        <a 
+                          href={getVillageDirectionsUrl(selectedVillage)} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="w-full py-2.5 bg-slate-900 hover:bg-slate-950 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+                        >
+                          <Map className="w-4 h-4 text-blue-400" />
+                          Mở Google Maps chỉ đường
+                        </a>
 
-                      <button
-                        onClick={() => setQrModalUrl({title: selectedVillage.name, url: selectedVillage.googleMapUrl})}
-                        className="w-full py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <QrCode className="w-3.5 h-3.5 text-emerald-600" />
-                        Sinh QR Code quét điện thoại
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => setQrModalUrl({
+                            title: selectedVillage.name,
+                            url: getVillageDirectionsUrl(selectedVillage),
+                            lat: selectedVillage.latitude,
+                            lng: selectedVillage.longitude
+                          })}
+                          className="w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-emerald-200/60 shadow-sm cursor-pointer"
+                        >
+                          <QrCode className="w-4 h-4 text-emerald-600" />
+                          Sinh QR Code quét điện thoại
+                        </button>
+                      </div>
+
                     </div>
-
-                  </div>
 
                 </div>
 
@@ -1826,42 +2052,65 @@ export default function CitizenView({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
           >
             <motion.div 
-              initial={{ scale: 0.93 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.93 }}
-              className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full p-6 text-slate-800 text-center relative"
+              initial={{ scale: 0.92, y: 10 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.92, y: 10 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 text-slate-800 text-center relative overflow-hidden"
             >
               <button 
                 onClick={() => setQrModalUrl(null)}
-                className="absolute top-4 right-4 p-1 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 transition-all"
+                className="absolute top-4 right-4 p-1.5 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 transition-all cursor-pointer z-10"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider mb-2">QR Code Định Vị GPS</h3>
-              <p className="text-xs text-slate-500 px-4 mb-4 font-medium">{qrModalUrl.title}</p>
+              <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                <QrCode className="w-5 h-5" />
+              </div>
+
+              <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider mb-1">
+                Mã QR Định Vị Google Maps
+              </h3>
+              <p className="text-xs font-semibold text-indigo-700 px-2 mb-2">{qrModalUrl.title}</p>
+
+              {qrModalUrl.lat && qrModalUrl.lng && (
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-full mb-3 border border-slate-200">
+                  <MapPin className="w-3 h-3 text-rose-500" />
+                  Tọa độ: {qrModalUrl.lat}, {qrModalUrl.lng}
+                </div>
+              )}
 
               {/* Real-time QR Code display using standard safe qrserver API */}
-              <div className="bg-slate-50 p-4 rounded-xl inline-block border border-slate-150 shadow-inner mb-4">
+              <div className="bg-slate-50 p-4 rounded-2xl inline-block border border-slate-200 shadow-inner mb-3 relative group">
                 <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrModalUrl.url)}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrModalUrl.url)}`}
                   alt="Mã định vị QR"
-                  className="w-44 h-44 mx-auto"
+                  className="w-48 h-48 mx-auto rounded-lg shadow-sm"
                 />
               </div>
 
-              <div className="space-y-3 px-2">
-                <p className="text-[11px] text-slate-500 leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200/50">
-                  Quét mã trên bằng ứng dụng Máy ảnh di động, Zalo, hoặc Google Lens để lấy liên kết định vị Google Maps trực tiếp.
+              <div className="space-y-2.5 px-1">
+                <p className="text-[11px] text-slate-600 leading-relaxed bg-emerald-50/80 p-3 rounded-xl border border-emerald-100 text-left">
+                  📱 <strong>Hướng dẫn:</strong> Sử dụng camera điện thoại (iPhone/Android), ứng dụng <strong>Zalo</strong> hoặc <strong>Google Lens</strong> quét mã QR này để tự động mở Google Maps chỉ đường tới vị trí thôn.
                 </p>
 
-                <div className="flex gap-2">
+                <a
+                  href={qrModalUrl.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-950 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <Map className="w-4 h-4 text-blue-400" />
+                  Mở Google Maps chỉ đường
+                </a>
+
+                <div className="flex gap-2 pt-1">
                   <button
                     onClick={() => handleCopyLink(qrModalUrl.url, "qr-link")}
-                    className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     {copiedId === "qr-link" ? (
                       <>
@@ -1871,13 +2120,13 @@ export default function CitizenView({
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5" />
-                        Copy Link bản đồ
+                        Copy Link Maps
                       </>
                     )}
                   </button>
                   <button
                     onClick={() => setQrModalUrl(null)}
-                    className="py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all"
+                    className="py-2 px-5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
                   >
                     Đóng
                   </button>

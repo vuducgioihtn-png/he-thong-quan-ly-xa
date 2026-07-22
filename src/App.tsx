@@ -345,43 +345,36 @@ export default function App() {
   const [tenants, setTenants] = useState<WardTenant[]>(() => {
     const saved = localStorage.getItem("vims_db_tenants");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      // Migrate old tenant IDs to "hai-anh-ninh-binh"
-      const migrated = parsed.map((t: any) => {
-        let updated = { ...t };
-        let changed = false;
-        if (updated.id === "ninh-binh-khanh-thien" || updated.id === "ninh-binh-hai-anh") {
-          updated.id = "hai-anh-ninh-binh";
-          changed = true;
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const migrated = parsed.map((t: any) => {
+            let updated = { ...t, wardId: "hai-anh-ninh-binh" };
+            if (updated.id === "ninh-binh-khanh-thien" || updated.id === "ninh-binh-hai-anh") {
+              updated.id = "hai-anh-ninh-binh";
+            }
+            if (updated.id === "hai-anh-ninh-binh") {
+              if (updated.district === "Huyện Yên Khánh" || updated.address?.includes("Huyện Yên Khánh")) {
+                updated.district = "";
+                updated.address = "Xã Hải Anh, Tỉnh Ninh Bình";
+              }
+              if (updated.email === "haianh.yenkhanh@ninhbinh.gov.vn") {
+                updated.email = "xahaianh.nb@ninhbinh.gov.vn";
+              }
+              if (!updated.naturalArea || updated.naturalArea === 2487.3) {
+                updated.naturalArea = 2653;
+                if (updated.introduction) {
+                  updated.introduction = updated.introduction.replace("26,13 km²", "26,53 km²").replace("24,87 km²", "26,53 km²");
+                }
+              }
+            }
+            return updated;
+          });
+          return migrated;
         }
-        if (updated.id === "hai-anh-ninh-binh" && (updated.district === "Huyện Yên Khánh" || updated.address.includes("Huyện Yên Khánh"))) {
-          updated.district = "";
-          updated.address = "Xã Hải Anh, Tỉnh Ninh Bình";
-          changed = true;
-        }
-        if (updated.id === "hai-anh-ninh-binh" && updated.email === "haianh.yenkhanh@ninhbinh.gov.vn") {
-          updated.email = "xahaianh.nb@ninhbinh.gov.vn";
-          changed = true;
-        }
-        if (updated.id === "hai-anh-ninh-binh" && (updated.naturalArea !== 2653 || updated.naturalArea === 2487.3)) {
-          updated.naturalArea = 2653;
-          if (updated.introduction) {
-            updated.introduction = updated.introduction.replace("26,13 km²", "26,53 km²").replace("24,87 km²", "26,53 km²");
-          }
-          changed = true;
-        }
-        if (changed) {
-          return updated;
-        }
-        return t;
-      });
-
-      if (migrated.some((t: any) => t.id !== "hai-anh-ninh-binh")) {
-        return SEEDED_TENANTS;
+      } catch (e) {
+        console.error("Error parsing vims_db_tenants", e);
       }
-      
-      localStorage.setItem("vims_db_tenants", JSON.stringify(migrated));
-      return migrated;
     }
     return SEEDED_TENANTS;
   });
@@ -389,53 +382,35 @@ export default function App() {
   const [villages, setVillages] = useState<Village[]>(() => {
     const saved = localStorage.getItem("vims_db_villages");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      // Migrate wardId
-      const migrated = parsed.map((v: any) => {
-        if (v.wardId === "ninh-binh-khanh-thien" || v.wardId === "ninh-binh-hai-anh") {
-          return { ...v, wardId: "hai-anh-ninh-binh" };
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const migrated = parsed.map((v: any) => {
+            let updated = { ...v, wardId: "hai-anh-ninh-binh" };
+            if (updated.establishedDate === "2024-11-01") {
+              updated.establishedDate = "22/6/2026";
+            }
+            // Ensure images are valid
+            const seeded = SEEDED_VILLAGES.find((sv) => sv.id === v.id);
+            if (seeded) {
+              const isBrokenOrOld = !updated.imageUrl || 
+                updated.imageUrl.includes("1500627869374") || 
+                updated.imageUrl.includes("1528164344705") || 
+                updated.imageUrl.includes("1500382017468") || 
+                updated.imageUrl.includes("1501785888041") ||
+                updated.imageUrl.includes("1472214222541");
+              if (isBrokenOrOld) {
+                updated.imageUrl = seeded.imageUrl;
+                updated.bannerUrl = seeded.bannerUrl;
+              }
+            }
+            return updated;
+          });
+          return migrated;
         }
-        return v;
-      });
-
-      // If old mock data detected (e.g. fewer than 10 villages, or containing old "Thôn Tăng Phong")
-      if (migrated.some((v: any) => v.wardId !== "hai-anh-ninh-binh" || v.name === "Thôn Tăng Phong") || migrated.length < 10) {
-        localStorage.removeItem("vims_db_villages");
-        localStorage.removeItem("vims_db_officials");
-        localStorage.removeItem("vims_db_announcements");
-        localStorage.removeItem("vims_db_reflections");
-        return SEEDED_VILLAGES;
+      } catch (e) {
+        console.error("Error parsing vims_db_villages", e);
       }
-      
-      // Migrate "2024-11-01" to "22/6/2026" and fix broken Unsplash images seamlessly in-place to protect user edits from being lost
-      let needMigration = false;
-      const migratedDates = migrated.map((v: any) => {
-        let updated = { ...v };
-        if (updated.establishedDate === "2024-11-01") {
-          updated.establishedDate = "22/6/2026";
-          needMigration = true;
-        }
-        
-        // Find corresponding seeded village to ensure images are perfectly synced if they are broken/old
-        const seeded = SEEDED_VILLAGES.find((sv) => sv.id === v.id);
-        if (seeded) {
-          const isBrokenOrOld = !updated.imageUrl || 
-            updated.imageUrl.includes("1500627869374") || 
-            updated.imageUrl.includes("1528164344705") || 
-            updated.imageUrl.includes("1500382017468") || 
-            updated.imageUrl.includes("1501785888041") ||
-            updated.imageUrl.includes("1472214222541");
-          
-          if (isBrokenOrOld) {
-            updated.imageUrl = seeded.imageUrl;
-            updated.bannerUrl = seeded.bannerUrl;
-            needMigration = true;
-          }
-        }
-        return updated;
-      });
-      localStorage.setItem("vims_db_villages", JSON.stringify(migratedDates));
-      return migratedDates;
     }
     return SEEDED_VILLAGES;
   });
@@ -443,190 +418,18 @@ export default function App() {
   const [officials, setOfficials] = useState<Official[]>(() => {
     const saved = localStorage.getItem("vims_db_officials");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      // Migrate wardId
-      const migratedWard = parsed.map((o: any) => {
-        if (o.wardId === "ninh-binh-khanh-thien" || o.wardId === "ninh-binh-hai-anh") {
-          return { ...o, wardId: "hai-anh-ninh-binh" };
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const migrated = parsed.map((o: any) => ({
+            ...o,
+            wardId: "hai-anh-ninh-binh"
+          }));
+          return migrated;
         }
-        return o;
-      });
-
-      if (migratedWard.some((o: any) => o.wardId !== "hai-anh-ninh-binh") || !localStorage.getItem("vims_db_villages")) {
-        return SEEDED_OFFICIALS;
+      } catch (e) {
+        console.error("Error parsing vims_db_officials", e);
       }
-      
-      // In-place database migration for Thôn 1, Thôn 2, Thôn 3, Thôn 4, Thôn 5, Thôn 6, Thôn 7, Thôn 8, Thôn 9, Thôn 10, Thôn 11, Thôn 12, Thôn 13, Thôn 14, Thôn 15, Thôn 16, Thôn 17, Thôn 18, Thôn 19, and Thôn 20 officials list
-      // Checks and migrates Thôn 1, Thôn 2, Thôn 3, Thôn 4, Thôn 5, Thôn 6, Thôn 7, Thôn 8, Thôn 9, Thôn 10, Thôn 11, Thôn 12, Thôn 13, Thôn 14, Thôn 15, Thôn 16, Thôn 17, Thôn 18, Thôn 19, and Thôn 20 rosters while retaining other customized values.
-      let migrated = [...parsed];
-      let needSave = false;
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v1-7")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-1"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-1")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v2-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-2"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-2")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v3-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-3"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-3")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v4-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-4"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-4")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v5-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-5"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-5")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v6-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-6"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-6")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v7-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-7"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-7")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v8-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-8"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-8")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v9-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-9"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-9")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v10-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-10"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-10")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v11-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-11"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-11")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v12-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-12"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-12")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v13-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-13"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-13")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v14-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-14"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-14")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v15-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-15"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-15")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v16-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-16"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-16")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v17-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-17"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-17")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v18-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-18"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-18")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v19-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-19"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-19")
-        ];
-        needSave = true;
-      }
-
-      if (!migrated.some((o: any) => o.id === "o-kt-v20-1")) {
-        migrated = [
-          ...migrated.filter((o: any) => o.villageId !== "v-kt-20"),
-          ...SEEDED_OFFICIALS.filter((o: any) => o.villageId === "v-kt-20")
-        ];
-        needSave = true;
-      }
-
-      if (needSave) {
-        localStorage.setItem("vims_db_officials", JSON.stringify(migrated));
-        return migrated;
-      }
-      
-      return parsed;
     }
     return SEEDED_OFFICIALS;
   });
@@ -634,17 +437,17 @@ export default function App() {
   const [offices, setOffices] = useState<AdministrativeOffice[]>(() => {
     const saved = localStorage.getItem("vims_db_offices");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      const migrated = parsed.map((of: any) => {
-        if (of.wardId === "ninh-binh-khanh-thien" || of.wardId === "ninh-binh-hai-anh") {
-          return { ...of, wardId: "hai-anh-ninh-binh" };
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((of: any) => ({
+            ...of,
+            wardId: "hai-anh-ninh-binh"
+          }));
         }
-        return of;
-      });
-      if (migrated.some((of: any) => of.wardId !== "hai-anh-ninh-binh")) {
-        return SEEDED_OFFICES;
+      } catch (e) {
+        console.error("Error parsing vims_db_offices", e);
       }
-      return migrated;
     }
     return SEEDED_OFFICES;
   });
@@ -652,17 +455,17 @@ export default function App() {
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
     const saved = localStorage.getItem("vims_db_announcements");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      const migrated = parsed.map((ann: any) => {
-        if (ann.wardId === "ninh-binh-khanh-thien" || ann.wardId === "ninh-binh-hai-anh") {
-          return { ...ann, wardId: "hai-anh-ninh-binh" };
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((ann: any) => ({
+            ...ann,
+            wardId: "hai-anh-ninh-binh"
+          }));
         }
-        return ann;
-      });
-      if (migrated.some((ann: any) => ann.wardId !== "hai-anh-ninh-binh") || !localStorage.getItem("vims_db_villages")) {
-        return SEEDED_ANNOUNCEMENTS;
+      } catch (e) {
+        console.error("Error parsing vims_db_announcements", e);
       }
-      return migrated;
     }
     return SEEDED_ANNOUNCEMENTS;
   });
@@ -670,17 +473,17 @@ export default function App() {
   const [reflections, setReflections] = useState<FieldReflection[]>(() => {
     const saved = localStorage.getItem("vims_db_reflections");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      const migrated = parsed.map((ref: any) => {
-        if (ref.wardId === "ninh-binh-khanh-thien" || ref.wardId === "ninh-binh-hai-anh") {
-          return { ...ref, wardId: "hai-anh-ninh-binh" };
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((ref: any) => ({
+            ...ref,
+            wardId: "hai-anh-ninh-binh"
+          }));
         }
-        return ref;
-      });
-      if (migrated.some((ref: any) => ref.wardId !== "hai-anh-ninh-binh") || !localStorage.getItem("vims_db_villages")) {
-        return SEEDED_REFLECTIONS;
+      } catch (e) {
+        console.error("Error parsing vims_db_reflections", e);
       }
-      return migrated;
     }
     return SEEDED_REFLECTIONS;
   });

@@ -764,6 +764,19 @@ export default function VillageOfficialView({
                   <h4 className="font-bold text-slate-900">{ref.title}</h4>
                   <p className="text-slate-500 leading-relaxed text-[11px]">{ref.content}</p>
                   
+                  {/* Media Evidence Display */}
+                  {ref.videoUrl || ref.mediaType === "video" ? (
+                    <div className="mt-2 rounded-lg overflow-hidden bg-slate-950 border border-slate-200">
+                      <video controls src={ref.videoUrl} className="w-full max-h-48 object-contain">
+                        Trình duyệt không hỗ trợ phát video.
+                      </video>
+                    </div>
+                  ) : ref.imageUrl ? (
+                    <div className="mt-2 rounded-lg overflow-hidden border border-slate-200">
+                      <img src={ref.imageUrl} alt={ref.title} className="w-full max-h-36 object-cover" />
+                    </div>
+                  ) : null}
+
                   {ref.status === "PENDING" && (
                     <div className="flex items-center gap-1.5 pt-2.5 border-t border-slate-200/55">
                       <button
