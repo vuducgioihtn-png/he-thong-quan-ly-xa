@@ -203,8 +203,14 @@ export default function App() {
 
   useEffect(() => {
     const fetchWeather = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
       try {
-        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=20.25&longitude=105.97&current=temperature_2m,weather_code");
+        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=20.25&longitude=105.97&current=temperature_2m,weather_code", {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
           if (data && data.current) {
@@ -218,8 +224,9 @@ export default function App() {
             return;
           }
         }
-      } catch (e) {
-        console.error("Lỗi tải thời tiết", e);
+      } catch (_err) {
+        // Quietly fallback without throwing console error
+        clearTimeout(timeoutId);
       }
       setWeather({
         temp: 29,
